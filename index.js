@@ -2,6 +2,16 @@ const puppeteer = require("puppeteer");
 const OpenAI = require("openai");
 require("dotenv").config();
 
+const BROWSERLESS_PARAMS = new URLSearchParams({
+  token: "YOURAPIKEY",
+  timeout: 300000,
+  proxy: "residential",
+  proxyCountry: "us",
+  headless: true,
+  stealth: true,
+  proxySticky: true,
+}).toString();
+
 const profile = {
   gender: "female",
   name_title: "Miss",
@@ -40,7 +50,7 @@ const profile = {
 
 // Set up OpenAI configuration
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_TOKEN,
+  apiKey: "YOUR OPENAI API TOKEN",
 });
 
 async function identifyFieldNames(profileFields, html) {
@@ -82,7 +92,9 @@ async function identifyFieldNames(profileFields, html) {
 }
 
 async function fillForm(url, profileFields) {
-  let browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.connect({
+    browserWSEndpoint: `wss://chrome.browserless.io?${queryParams}`,
+  });
   const page = await browser.newPage();
   await page.goto(url);
   const bodyHTML = await page.evaluate(() => document.body.innerHTML);
