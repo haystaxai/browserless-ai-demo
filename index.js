@@ -7,11 +7,8 @@ const { BROWSERLESS_TOKEN, OPENAI_API_KEY } = process.env;
 const BROWSERLESS_PARAMS = new URLSearchParams({
   token: BROWSERLESS_TOKEN,
   timeout: 300000,
-  // proxy: "residential",
-  // proxyCountry: "us",
   headless: true,
   stealth: true,
-  // proxySticky: true,
 }).toString();
 
 const profile = {
@@ -80,11 +77,13 @@ async function identifyFieldNames(profileFields, html) {
 }
 
 async function fillForm(url, profileFields) {
-  const browser = await puppeteer.connect({
-    browserWSEndpoint: `wss://chrome.browserless.io?${BROWSERLESS_PARAMS}`,
-  });
+  const browser = await puppeteer.launch({ headless: false });
+  // const browser = await puppeteer.connect({
+  //   browserWSEndpoint: `wss://chrome.browserless.io?${BROWSERLESS_PARAMS}`,
+  // });
   const page = await browser.newPage();
   await page.goto(url);
+  await page.setViewport({ width: 1080, height: 1024 });
   const bodyHTML = await page.evaluate(() => document.body.innerHTML);
 
   // Get the mapping of profile fields to input names
@@ -104,7 +103,7 @@ async function fillForm(url, profileFields) {
     }
   }
 
-  await browser.close();
+  // await browser.close();
 }
 
 // Read URL and profile fields from command line arguments
