@@ -37,7 +37,7 @@ const openai = new OpenAI({
 
 async function identifyFieldNames(profileFields, html) {
   const prompt = `
-  I'm going to give you profile fields in JSON and an HTML document. Give 
+  I'm going to give you profile fields in JSON and an HTML document.
   Provide a JSON mapping of profile fields to input names for the HTML form on the page
   with the given output format.
 
