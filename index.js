@@ -2,14 +2,16 @@ const puppeteer = require("puppeteer");
 const OpenAI = require("openai");
 require("dotenv").config();
 
+const { BROWSERLESS_TOKEN, OPENAI_API_KEY } = process.env;
+
 const BROWSERLESS_PARAMS = new URLSearchParams({
-  token: "YOURAPIKEY",
+  token: BROWSERLESS_TOKEN,
   timeout: 300000,
-  proxy: "residential",
-  proxyCountry: "us",
+  // proxy: "residential",
+  // proxyCountry: "us",
   headless: true,
   stealth: true,
-  proxySticky: true,
+  // proxySticky: true,
 }).toString();
 
 const profile = {
@@ -23,10 +25,7 @@ const profile = {
   location_state: "Michigan",
   location_country: "United States",
   location_postcode: "63104",
-  location_coordinates_latitude: "-69.8246",
-  location_coordinates_longitude: "134.8719",
   email: "jennie.nichols@example.com",
-  dob_date: "1992-03-08T15:13:16.688Z",
   dob_age: 30,
   phone: "(272) 790-0888",
   cell: "(489) 330-2385",
@@ -35,7 +34,7 @@ const profile = {
 
 // Set up OpenAI configuration
 const openai = new OpenAI({
-  apiKey: "YOUR OPENAI API TOKEN",
+  apiKey: OPENAI_API_KEY,
 });
 
 async function identifyFieldNames(profileFields, html) {
@@ -44,6 +43,8 @@ async function identifyFieldNames(profileFields, html) {
   Provide a JSON mapping of profile fields to input names for the HTML form on the page
   with the given output format.
 
+  If you can't find a form field for a given profile field, do not include it in the output.
+
   ---
 
   # Output format
@@ -51,6 +52,8 @@ async function identifyFieldNames(profileFields, html) {
   {
     "profile_property_name": "html_input_field_name"
   }
+
+  Where "html_input_field_name" is always a string.
 
   --- 
 
@@ -68,7 +71,7 @@ async function identifyFieldNames(profileFields, html) {
 
   const chatCompletion = await openai.chat.completions.create({
     messages: [{ role: "user", content: prompt }],
-    model: "gpt-4o-mini",
+    model: "gpt-4o",
     response_format: { type: "json_object" },
   });
 
@@ -78,7 +81,7 @@ async function identifyFieldNames(profileFields, html) {
 
 async function fillForm(url, profileFields) {
   const browser = await puppeteer.connect({
-    browserWSEndpoint: `wss://chrome.browserless.io?${queryParams}`,
+    browserWSEndpoint: `wss://chrome.browserless.io?${BROWSERLESS_PARAMS}`,
   });
   const page = await browser.newPage();
   await page.goto(url);
@@ -86,6 +89,7 @@ async function fillForm(url, profileFields) {
 
   // Get the mapping of profile fields to input names
   const fieldMapping = await identifyFieldNames(profileFields, bodyHTML);
+  console.log({ fieldMapping });
 
   for (const [profileKey, inputName] of Object.entries(fieldMapping)) {
     const value = profileFields[profileKey];
