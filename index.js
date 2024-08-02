@@ -32,6 +32,7 @@ const profile = {
 // Set up OpenAI configuration
 const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
+  temperature: 0,
 });
 
 async function identifyFieldNames(profileFields, html) {
@@ -97,7 +98,7 @@ async function fillForm(url, profileFields) {
       continue;
     }
     try {
-      await page.type(`input[name="${inputName}"]`, value);
+      await page.type(`input[name="${inputName}"]`, String(value));
     } catch (error) {
       console.error(`Could not find input field with name: ${inputName}`);
     }
